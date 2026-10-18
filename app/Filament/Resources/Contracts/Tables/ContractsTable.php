@@ -134,6 +134,13 @@ class ContractsTable
                 ViewAction::make(),
                 EditAction::make(),
             ])
+            ->headerActions([
+                \Filament\Actions\Action::make('print_report_table')
+                    ->label('طباعة تقرير الحصر (PDF)')
+                    ->icon('heroicon-o-printer')
+                    ->color('primary')
+                    ->url(route('contracts.report'), shouldOpenInNewTab: true),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
