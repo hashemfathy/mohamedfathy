@@ -59,11 +59,31 @@ class ContractsTable
                     })
                     ->sortable(),
 
-                TextColumn::make('rent_amount')
-                    ->label('القيمة الإيجارية')
+                TextColumn::make('current_rent_amount')
+                    ->label('الإيجار الحالي')
                     ->numeric(decimalPlaces: 2)
                     ->suffix(' ج.م')
-                    ->sortable(),
+                    ->description(function (Contract $record): ?string {
+                        if ($record->is_annual_increase_due_soon) {
+                            $nextRent = $record->next_rent_amount ? number_format($record->next_rent_amount, 0) . ' ج.م' : '';
+                            return "⚠️ زيادة خلال {$record->days_until_next_annual_increase} يوم ({$nextRent})";
+                        }
+                        if ($record->has_rent_increase) {
+                            return 'الأساسي: ' . number_format($record->rent_amount, 0) . ' ج.م (+' . number_format($record->rent_increase_difference, 0) . ')';
+                        }
+                        return null;
+                    })
+                    ->color(fn (Contract $record): ?string => 
+                        $record->is_annual_increase_due_soon ? 'warning' : ($record->has_rent_increase ? 'success' : null)
+                    )
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('rent_amount', $direction)),
+
+                TextColumn::make('rent_amount')
+                    ->label('الإيجار الأساسي')
+                    ->numeric(decimalPlaces: 2)
+                    ->suffix(' ج.م')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('start_date')
                     ->label('تاريخ البدء')
@@ -74,6 +94,13 @@ class ContractsTable
                     ->label('تاريخ الإنهاء')
                     ->date('Y-m-d')
                     ->sortable(),
+
+                TextColumn::make('next_annual_increase_date')
+                    ->label('موعد الزيادة القادمة')
+                    ->date('Y-m-d')
+                    ->badge()
+                    ->color(fn (Contract $record): string => $record->is_annual_increase_due_soon ? 'warning' : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('duration')
                     ->label('المدة')
@@ -125,6 +152,10 @@ class ContractsTable
                 SelectFilter::make('project_id')
                     ->label('المشروع')
                     ->relationship('project', 'name'),
+
+                Filter::make('increase_due_soon')
+                    ->label('عقود تستحق زيادة سنوية (خلال 30 يوم)')
+                    ->query(fn (Builder $query): Builder => $query->increaseDueSoon(30)),
 
                 Filter::make('ending_soon')
                     ->label('عقود تنتهي خلال 30 يوم')

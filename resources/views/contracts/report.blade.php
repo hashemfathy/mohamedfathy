@@ -620,9 +620,9 @@
                                 <th style="width: 10%;">مدة العقد</th>
                                 <th style="width: 10%;">تاريخ البدء</th>
                                 <th style="width: 10%;">تاريخ الانتهاء</th>
-                                <th style="width: 10%;">القيمة الإيجارية</th>
+                                <th style="width: 11%;">القيمة الإيجارية الحالية</th>
                                 <th style="width: 9%;">مبلغ التأمين</th>
-                                <th style="width: 12%;">الزيادة السنوية تبدأ من</th>
+                                <th style="width: 11%;">الزيادة السنوية تبدأ من</th>
                                 <th style="width: 8%;">الحالة</th>
                             </tr>
                         </thead>
@@ -664,7 +664,12 @@
                                     <td>{{ $contract->duration ?? 'سنة' }}</td>
                                     <td>{{ $contract->start_date ? $contract->start_date->format('Y-m-d') : '—' }}</td>
                                     <td>{{ $contract->end_date ? $contract->end_date->format('Y-m-d') : '—' }}</td>
-                                    <td class="col-money">{{ number_format($contract->rent_amount, 0) }} ج.م</td>
+                                    <td class="col-money">
+                                        {{ number_format($contract->current_rent_amount, 0) }} ج.م
+                                        @if ($contract->has_rent_increase)
+                                            <div style="font-size: 10px; color: #16a34a; font-weight: normal;">(ابتدائي: {{ number_format($contract->rent_amount, 0) }})</div>
+                                        @endif
+                                    </td>
                                     <td class="col-money">{{ number_format($contract->insurance_amount, 0) }} ج.م</td>
                                     <td>{{ $incDisplay }}</td>
                                     <td>

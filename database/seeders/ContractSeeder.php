@@ -57,6 +57,12 @@ class ContractSeeder extends Seeder
                 $notes .= " | تاريخ تحرير العقد (أنه في يوم): {$contractDate}";
             }
 
+            $increaseRate = $data['increase'] ?? '10%';
+            $increaseStartDate = null;
+            if (preg_match('/(?:اعتبارا|اعتباراً|تبدأ)\s+من\s+(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/u', $increaseRate, $dm)) {
+                $increaseStartDate = "{$dm[3]}-" . str_pad($dm[2], 2, '0', STR_PAD_LEFT) . "-" . str_pad($dm[1], 2, '0', STR_PAD_LEFT);
+            }
+
             Contract::create([
                 'project_id' => $project->id,
                 'floor' => $data['floor'],
@@ -68,7 +74,8 @@ class ContractSeeder extends Seeder
                 'end_date' => $data['end_date'] ?: null,
                 'rent_amount' => $data['rent'] ?? 0,
                 'insurance_amount' => $data['insurance'] ?? 0,
-                'annual_increase_rate' => $data['increase'] ?? '10%',
+                'annual_increase_rate' => $increaseRate,
+                'annual_increase_start_date' => $increaseStartDate,
                 'service_fees' => $data['service_fees'] ?? 0,
                 'status' => $data['status'] ?? 'active',
                 'notes' => $notes,

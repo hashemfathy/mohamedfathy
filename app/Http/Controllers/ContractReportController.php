@@ -22,7 +22,7 @@ class ContractReportController extends Controller
         $project = Project::first();
 
         $totalContracts = Contract::count();
-        $totalMonthlyRent = Contract::where('status', 'active')->sum('rent_amount');
+        $totalMonthlyRent = Contract::where('status', 'active')->get()->sum(fn ($c) => $c->current_rent_amount);
         $totalInsurance = Contract::sum('insurance_amount');
 
         $activeCount = Contract::where('status', 'active')
@@ -81,7 +81,7 @@ class ContractReportController extends Controller
                 ->get();
 
             $assignedIds = array_merge($assignedIds, $contracts->pluck('id')->toArray());
-            $floorRent = $contracts->where('status', 'active')->sum('rent_amount');
+            $floorRent = $contracts->where('status', 'active')->sum(fn ($c) => $c->current_rent_amount);
 
             $floorsData[] = [
                 'name' => $def['display'],
@@ -99,7 +99,7 @@ class ContractReportController extends Controller
                     'name' => $unmappedFloor ?: 'وحدات أخرى',
                     'contracts' => $unmappedGroup,
                     'count' => $unmappedGroup->count(),
-                    'total_rent' => $unmappedGroup->where('status', 'active')->sum('rent_amount'),
+                    'total_rent' => $unmappedGroup->where('status', 'active')->sum(fn ($c) => $c->current_rent_amount),
                 ];
             }
         }

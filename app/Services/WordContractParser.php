@@ -59,7 +59,7 @@ class WordContractParser
             'rent_amount' => $this->extractRentAmount($text),
             'insurance_amount' => $this->extractInsuranceAmount($text),
             'annual_increase_rate' => $this->extractAnnualIncrease($text),
-            'annual_increase_start_date' => null,
+            'annual_increase_start_date' => $this->extractAnnualIncreaseStartDate($text),
             'service_fees' => $this->extractServiceFees($text),
             'status' => 'active',
             'notes' => 'تم استيراده تلقائياً من ملف: ' . $fileName,
@@ -173,6 +173,15 @@ class WordContractParser
         }
 
         return '10% سنوياً';
+    }
+
+    protected function extractAnnualIncreaseStartDate(string $text): ?string
+    {
+        if (preg_match('/(?:زيادة سنوية|نسبة الزيادة|بزيادة سنوية|الزيادة)[^.\n]*?(?:اعتبارا|اعتباراً|تبدأ)\s+من\s+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/u', $text, $matches)) {
+            return $this->standardizeDate($matches[1]);
+        }
+
+        return null;
     }
 
     protected function extractServiceFees(string $text): float
